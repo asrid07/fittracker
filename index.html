@@ -126,8 +126,9 @@ async function checkSession() {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     window.location.href = 'app.html';
+  }
+}
 
-    <script>
 function togglePw() {
   const pw = document.getElementById('password');
   const btn = document.getElementById('eyeBtn');
@@ -197,6 +198,3 @@ document.addEventListener('keydown', e => {
 </script>
 </body>
 </html>
-< ! - -   T r i g g e r   r e b u i l d   - - > 
- 
- 

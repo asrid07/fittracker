@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0a0a0f">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>FitTracker AI — Login</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -128,10 +129,8 @@ async function checkSession() {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     window.location.href = 'app.html';
-  }
-}
-checkSession();
 
+    <script>
 function togglePw() {
   const pw = document.getElementById('password');
   const btn = document.getElementById('eyeBtn');

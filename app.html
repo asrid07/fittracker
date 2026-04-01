@@ -554,24 +554,24 @@ const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const DAYSF = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
 const MEALS = [
-  {id:1,time:'20:00',icon:'🏃',name:'Pre-Gym (Wake Up)',cal:110,prot:3,desc:'Black coffee + Banana 1 + Almonds 5 | 💊 L-Carnitine + B12 + Multi'},
-  {id:2,time:'22:45',icon:'💪',name:'Post-Workout',cal:340,prot:42,desc:'Whey Isolate 1 scoop + 3 Egg Whites + Oats 25g + Flaxseeds 1 tbsp'},
-  {id:3,time:'01:00',icon:'🍎',name:'Night Snack',cal:110,prot:10,desc:'Greek Yogurt 100g (plain) + Green Tea (no sugar)'},
-  {id:4,time:'03:00',icon:'🍗',name:'Main Meal',cal:370,prot:40,desc:'Chicken/Salmon 160g + Brown Rice 40g + Dal + Broccoli/Veg | 💊 Omega-3'},
-  {id:5,time:'05:30',icon:'🥜',name:'Light Snack',cal:80,prot:4,desc:'Roasted Chana 15g + Walnuts 2 halves + Green Tea'},
-  {id:6,time:'07:30',icon:'🐟',name:'Last Meal ZERO CARBS',cal:250,prot:30,desc:'Fish/Chicken 140g + Spinach + Mushrooms + Curd 80g — NO rice/carbs!'},
-  {id:7,time:'09:30',icon:'🌙',name:'Before Sleep',cal:130,prot:15,desc:'Turmeric Milk 100ml + Casein 0.5 scoop (gym days) | 💊 Mag 400mg'},
+  {id:1,time:'08:00',icon:'🏃',name:'Pre-Gym (Wake Up)',cal:110,prot:3,desc:'Black coffee + Banana 1 + Almonds 5 | 💊 L-Carnitine + B12 + Multi'},
+  {id:2,time:'10:45',icon:'💪',name:'Post-Workout',cal:340,prot:42,desc:'Whey Isolate 1 scoop + 3 Egg Whites + Oats 25g + Flaxseeds 1 tbsp'},
+  {id:3,time:'13:00',icon:'🍎',name:'Afternoon Snack',cal:110,prot:10,desc:'Greek Yogurt 100g (plain) + Green Tea (no sugar)'},
+  {id:4,time:'15:00',icon:'🍗',name:'Main Meal',cal:370,prot:40,desc:'Chicken/Salmon 160g + Brown Rice 40g + Dal + Broccoli/Veg | 💊 Omega-3'},
+  {id:5,time:'17:30',icon:'🥜',name:'Evening Snack',cal:80,prot:4,desc:'Roasted Chana 15g + Walnuts 2 halves + Green Tea'},
+  {id:6,time:'19:30',icon:'🐟',name:'Last Meal ZERO CARBS',cal:250,prot:30,desc:'Fish/Chicken 140g + Spinach + Mushrooms + Curd 80g — NO rice/carbs!'},
+  {id:7,time:'21:30',icon:'🌙',name:'Before Sleep',cal:130,prot:15,desc:'Turmeric Milk 100ml + Casein 0.5 scoop (gym days) | 💊 Mag 400mg'},
 ];
 
 const SUPPS = [
   {id:'vitd',name:'Vitamin D3 + K2',dose:'60,000 IU',timing:'Weekly with fatty meal'},
-  {id:'omega',name:'Omega-3 Fish Oil (2 caps)',dose:'2,000mg',timing:'With Main Meal (3 AM)'},
-  {id:'whey',name:'Fuel One Whey Isolate',dose:'1 scoop',timing:'Post-gym (10:45 PM)'},
-  {id:'b12',name:'Vitamin B12',dose:'500–1000 mcg',timing:'Wake up meal (8 PM)'},
-  {id:'mag',name:'Magnesium Glycinate',dose:'400mg',timing:'Before sleep (9:30 AM)'},
-  {id:'multi',name:'Multivitamin',dose:'1 tablet',timing:'Wake up meal (8 PM)'},
-  {id:'lcar',name:'MB L-Carnitine PRO',dose:'15ml (3,300mg)',timing:'8:20 PM (40 min pre-gym)'},
-  {id:'casein',name:'Casein Protein',dose:'0.5 scoop',timing:'Before sleep gym days (9:30 AM)'},
+  {id:'omega',name:'Omega-3 Fish Oil (2 caps)',dose:'2,000mg',timing:'With Main Meal (3 PM)'},
+  {id:'whey',name:'Fuel One Whey Isolate',dose:'1 scoop',timing:'Post-gym (10:45 AM)'},
+  {id:'b12',name:'Vitamin B12',dose:'500–1000 mcg',timing:'Wake up meal (8 AM)'},
+  {id:'mag',name:'Magnesium Glycinate',dose:'400mg',timing:'Before sleep (9:30 PM)'},
+  {id:'multi',name:'Multivitamin',dose:'1 tablet',timing:'Wake up meal (8 AM)'},
+  {id:'lcar',name:'MB L-Carnitine PRO',dose:'15ml (3,300mg)',timing:'8:20 AM (40 min pre-gym)'},
+  {id:'casein',name:'Casein Protein',dose:'0.5 scoop',timing:'Before sleep gym days (9:30 PM)'},
 ];
 
 const GYM_SPLIT = {
@@ -585,15 +585,15 @@ const GYM_SPLIT = {
 };
 
 const WATER_SCHEDULE = [
-  {time:'20:00',amount:'500ml',reason:'🏃 Wake up hydration — first thing'},
-  {time:'21:00',amount:'250ml',reason:'🏋️ During gym — sip between sets'},
-  {time:'22:30',amount:'500ml',reason:'💪 Post-gym — replaces sweat loss'},
-  {time:'00:30',amount:'500ml',reason:'🍎 With night snack'},
-  {time:'03:00',amount:'500ml',reason:'🍗 With main meal — flushes Uric Acid'},
-  {time:'05:00',amount:'500ml',reason:'☀️ Early morning — keeps metabolism active'},
-  {time:'06:30',amount:'500ml',reason:'🥜 Before last meals'},
-  {time:'07:30',amount:'500ml',reason:'🐟 Before last meal — reduces portion size'},
-  {time:'09:00',amount:'250ml',reason:'🌙 Before sleep — flushes kidneys'},
+  {time:'08:00',amount:'500ml',reason:'🏃 Wake up hydration — first thing'},
+  {time:'09:00',amount:'250ml',reason:'🏋️ During gym — sip between sets'},
+  {time:'10:30',amount:'500ml',reason:'💪 Post-gym — replaces sweat loss'},
+  {time:'12:30',amount:'500ml',reason:'🍎 With afternoon snack'},
+  {time:'15:00',amount:'500ml',reason:'🍗 With main meal — flushes Uric Acid'},
+  {time:'17:00',amount:'500ml',reason:'☀️ Evening — keeps metabolism active'},
+  {time:'18:30',amount:'500ml',reason:'🥜 Before last meals'},
+  {time:'19:30',amount:'500ml',reason:'🐟 With last meal — reduces portion size'},
+  {time:'21:00',amount:'250ml',reason:'🌙 Before sleep — flushes kidneys'},
 ];
 
 // ═══════════════════════════════════════════════════════
@@ -827,7 +827,7 @@ function renderGym(){
   const g=isGym(),split=GYM_SPLIT[DOW];
   document.getElementById('gDay').textContent=(g?'🏋️ ':'😴 ')+split.name;
   document.getElementById('gDay').style.color=g?'var(--g)':'var(--r)';
-  document.getElementById('gInfo').innerHTML=g?`⏰ 9:00 PM &nbsp;📍 Gym<br>💊 L-Carnitine PRO 15ml at 8:20 PM (40 min before)<br>🥛 Whey Isolate immediately after<br>💧 Carry 1.5L water bottle<br>🔥 AGGRESSIVE: Extra 10min HIIT finisher every session`:'Active recovery — 20min walk + stretching + foam rolling.';
+  document.getElementById('gInfo').innerHTML=g?`⏰ 9:00 AM &nbsp;📍 Gym<br>💊 L-Carnitine PRO 15ml at 8:20 AM (40 min before)<br>🥛 Whey Isolate immediately after<br>💧 Carry 1.5L water bottle<br>🔥 AGGRESSIVE: Extra 10min HIIT finisher every session`:'Active recovery — 20min walk + stretching + foam rolling.';
   if(g&&split.exercises.length){
     document.getElementById('gExercises').innerHTML=split.exercises.map(e=>`
       <div style="padding:8px 0;border-bottom:1px solid #1a1a28">
@@ -1053,7 +1053,7 @@ function buildSystem(){
   const allGym=Object.entries(gymLog).slice(-7).map(([d,l])=>`${d}:${l.workout||''} ${l.rating||''} ${l.energy||''}`).join(' | ');
   return `You are Coach Rex — Asrid's dedicated, STRICT, aggressive AI personal trainer. Direct, energetic, science-backed, tough-love when needed.
 
-ATHLETE: Asrid Cheerngodan | 25M | 171cm | Bengaluru | NIGHT SHIFT (wakes 8 PM, gym 9 PM, sleeps ~10 AM)
+ATHLETE: Asrid Cheerngodan | 25M | 171cm | Bengaluru | Morning schedule (wakes 8 AM, gym 9 AM, sleeps ~10 PM)
 
 ⚠️ AGGRESSIVE FAT LOSS MODE — No progress Week 1. Plan is now INTENSE:
 - Calories: 1,400 kcal/day (cut from 1,600)
@@ -1075,7 +1075,7 @@ BLOOD FLAGS (CRITICAL):
 TARGETS: 1,350–1,400 kcal | Protein 135–140g MAX | ZERO carbs last meal | 4.5L water
 
 TODAY (${TODAY} — ${DAYSF[DOW]}):
-Gym: ${isGym()?'YES — '+GYM_SPLIT[DOW].name+' at 9 PM':'REST DAY'}
+Gym: ${isGym()?'YES — '+GYM_SPLIT[DOW].name+' at 9 AM':'REST DAY'}
 Meals: ${mDone()}/7 | Calories: ${tCal()}kcal | Protein: ${tProt()}g
 Water: ${wLit()}L / 4.5L | Supps: ${sDone()}/${SUPPS.length}
 Foods today: ${tf().length?tf().map(f=>`${f.name}(${f.cal}kcal,${f.prot}g)`).join(', '):'Nothing logged'}
@@ -1203,7 +1203,7 @@ function setupNotifs(){
   else if(Notification.permission==='granted')scheduleNotifs();
 }
 function scheduleNotifs(){
-  [[20,0,'🏃 WAKE UP! MEAL 1: Coffee+Banana+Almonds | L-Carnitine+B12+Multi | GYM 9PM!'],[20,20,'💊 Take L-Carnitine PRO 15ml NOW! Gym in 40 min!'],[22,45,'💪 MEAL 2: Whey shake NOW! Then Egg Whites+Oats+Flaxseeds'],[1,0,'🍎 MEAL 3: Greek yogurt + Green tea'],[2,50,'🍗 MAIN MEAL in 10 min: Chicken/Fish+Rice+Dal | Omega-3 2 caps!'],[5,30,'🥜 MEAL 5: Chana+Walnuts+Green tea'],[7,20,'🐟 LAST MEAL ZERO CARBS: Fish/Chicken+Veggies+Curd ONLY!'],[9,30,'🌙 MEAL 7: Turmeric milk+Casein+Mag | Sleep by 10:30!']].forEach(([h,m,msg])=>{
+  [[8,0,'🏃 WAKE UP! MEAL 1: Coffee+Banana+Almonds | L-Carnitine+B12+Multi | GYM 9AM!'],[8,20,'💊 Take L-Carnitine PRO 15ml NOW! Gym in 40 min!'],[10,45,'💪 MEAL 2: Whey shake NOW! Then Egg Whites+Oats+Flaxseeds'],[13,0,'🍎 MEAL 3: Greek yogurt + Green tea'],[14,50,'🍗 MAIN MEAL in 10 min: Chicken/Fish+Rice+Dal | Omega-3 2 caps!'],[17,30,'🥜 MEAL 5: Chana+Walnuts+Green tea'],[19,20,'🐟 LAST MEAL ZERO CARBS: Fish/Chicken+Veggies+Curd ONLY!'],[21,30,'🌙 MEAL 7: Turmeric milk+Casein+Mag | Sleep by 10:30!']].forEach(([h,m,msg])=>{
     const now=new Date(),t=new Date();t.setHours(h,m,0,0);let delay=t-now;if(delay<0)delay+=86400000;
     setTimeout(()=>{if(Notification.permission==='granted')new Notification('💪 FitTracker — Coach Rex',{body:msg});},delay);
   });

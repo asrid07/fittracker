@@ -231,6 +231,10 @@ textarea.inp{resize:none;min-height:80px}
 
 <!-- PAGE: MEALS -->
 <div id="page-meals" class="page">
+  <div class="card" style="border-color:#ff8c0030">
+    <div class="ct" style="color:var(--o)">📊 Daily Nutrition Progress</div>
+    <div id="mealBars"></div>
+  </div>
   <div class="card"><div class="ct">7-Meal Plan — <span id="mCount">0/7</span></div><div id="mealList"></div></div>
   <div class="card">
     <div class="ct">🍽️ Log Food Intake</div>
@@ -722,6 +726,8 @@ function renderWater(){
 function renderMeals(){
   const d=tm();
   document.getElementById('mCount').textContent=mDone()+'/7';
+  const mb=document.getElementById('mealBars');
+  if(mb)mb.innerHTML=PB('Meals Done',mDone(),7,'var(--g)')+PB('Calories (1,400 kcal)',Math.min(tCal(),1400),1400,'var(--o)')+PB('Protein (140g max)',Math.min(tProt(),140),140,'var(--b)')+PB('Water (4.5L)',tw(),9,'var(--w)');
   document.getElementById('mealList').innerHTML=MEALS.map(m=>`
     <div class="row ${d[m.id]?'faded':''}" onclick="toggleMeal(${m.id})">
       <div class="cb ${d[m.id]?'done':''}">${d[m.id]?'✓':''}</div>
@@ -799,10 +805,18 @@ function renderFoodLog(){
     <div class="row"><div class="f1"><div class="rt">${f.name}</div><div class="rs">🔥${f.cal}kcal  💪${f.prot}g  🌾${f.carb}g  🧈${f.fat}g</div></div>
     <button onclick="removeFood(${f.id})" style="background:#ff446615;border:none;color:var(--r);border-radius:7px;padding:4px 9px;cursor:pointer;font-size:11px">✕</button></div>`).join('');
   const tc=tCal(),tp=tProt();
-  document.getElementById('foodTot').innerHTML=`<div style="margin-top:8px;padding:10px;background:#0a0a15;border-radius:11px">
-    <div style="font-weight:700;color:var(--g);font-size:13px">Daily Total</div>
-    <div style="font-size:12px;color:#aaa;margin-top:4px">🔥 ${tc} kcal &nbsp; 💪 ${tp}g protein</div>
-    <div style="font-size:11px;color:${tc>1500?'var(--r)':'var(--g)'};margin-top:3px">${tc>1500?'⚠️ Over target!':'✅ On track'} | Target: 1,400kcal/140g</div>
+  const calPct=Math.min(100,Math.round(tc/1400*100)),protPct=Math.min(100,Math.round(tp/140*100));
+  document.getElementById('foodTot').innerHTML=`<div style="margin-top:8px;padding:12px;background:#0a0a15;border-radius:11px">
+    <div style="font-weight:700;color:var(--g);font-size:13px;margin-bottom:8px">📊 Daily Total</div>
+    <div style="margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:#ccc">🔥 Calories</span><span style="color:${tc>1400?'var(--r)':'var(--o)'};font-weight:700">${tc} / 1,400 kcal — ${calPct}%</span></div>
+      <div class="pb"><div class="pf" style="width:${calPct}%;background:${tc>1400?'var(--r)':'var(--o)'}"></div></div>
+    </div>
+    <div style="margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:#ccc">💪 Protein</span><span style="color:${tp>140?'var(--r)':'var(--b)'};font-weight:700">${tp} / 140g — ${protPct}%</span></div>
+      <div class="pb"><div class="pf" style="width:${protPct}%;background:${tp>140?'var(--r)':'var(--b)'}"></div></div>
+    </div>
+    <div style="font-size:11px;color:${tc>1400?'var(--r)':'var(--g)'};margin-top:4px">${tc>1400?'⚠️ Over calorie target!':tp>140?'⚠️ Over protein limit (kidney safety)!':'✅ On track'} | Target: 1,400kcal / 140g max</div>
   </div>`;
 }
 

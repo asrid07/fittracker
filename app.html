@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0a0a0f">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>FitTracker AI — Asrid</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -232,8 +233,9 @@ textarea.inp{resize:none;min-height:80px}
 <div id="page-meals" class="page">
   <div class="card"><div class="ct">7-Meal Plan — <span id="mCount">0/7</span></div><div id="mealList"></div></div>
   <div class="card">
-    <div class="ct">Log Food Intake</div>
-    <input class="inp" id="fName" placeholder="Food name (e.g. Grilled Chicken 180g)">
+    <div class="ct">🍽️ Log Food Intake</div>
+    <input class="inp" id="fName" placeholder="e.g. Grilled Chicken 180g, 2 Roti, Biryani 1 plate">
+    <button class="btn btn-p mt8" onclick="estimateMacros()" id="estBtn" style="font-size:11px;padding:8px">🤖 Auto-Estimate Macros with AI</button>
     <div class="ig4" style="margin-top:7px">
       <input class="inp" id="fCal" type="number" placeholder="kcal">
       <input class="inp" id="fProt" type="number" placeholder="Prot(g)">
@@ -243,6 +245,10 @@ textarea.inp{resize:none;min-height:80px}
     <button class="btn btn-b" onclick="addFood()">➕ Add Food</button>
     <div id="foodLog" style="margin-top:12px"></div>
     <div id="foodTot"></div>
+  </div>
+  <div class="card" style="border-color:#b06cff30">
+    <div class="ct" style="color:var(--p)">💊 Today's Supplements — <span id="mealSuppCount">0/8</span></div>
+    <div id="mealSuppList"></div>
   </div>
 </div>
 
@@ -544,24 +550,24 @@ const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const DAYSF = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
 const MEALS = [
-  {id:1,time:'05:00',icon:'🏃',name:'Pre-Gym',cal:142,prot:3,desc:'Lemon water + Black coffee + Banana 1 + Almonds 6 (soaked)'},
-  {id:2,time:'10:15',icon:'💪',name:'Post-Workout',cal:528,prot:54,desc:'Whey Isolate 1 scoop + 2 Eggs + 3 Whites + Oats 50g + Flaxseeds 1 tbsp'},
-  {id:3,time:'12:30',icon:'🍎',name:'Mid-Morning',cal:172,prot:13,desc:'Greek Yogurt 150g (plain) + Apple 1 + Green Tea (no sugar)'},
-  {id:4,time:'14:00',icon:'🍗',name:'Lunch',cal:507,prot:51,desc:'Chicken/Salmon 180g + Brown Rice 75g + Moong Dal + Broccoli/Veg + Omega-3 2g'},
-  {id:5,time:'17:00',icon:'🥜',name:'Snack',cal:114,prot:6,desc:'Roasted Chana 25g + Walnuts 2 halves + Green Tea (no sugar)'},
-  {id:6,time:'19:30',icon:'🐟',name:'Dinner ZERO CARBS',cal:315,prot:43,desc:'Fish/Chicken 160g + Spinach + Mushrooms + Broccoli + Curd 100g — NO rice!'},
-  {id:7,time:'21:30',icon:'🌙',name:'Before Bed',cal:200,prot:31,desc:'Turmeric Milk 200ml + Casein 1 scoop (gym days) + Magnesium 400mg'},
+  {id:1,time:'20:00',icon:'🏃',name:'Pre-Gym (Wake Up)',cal:110,prot:3,desc:'Black coffee + Banana 1 + Almonds 5 | 💊 L-Carnitine + B12 + Multi'},
+  {id:2,time:'22:45',icon:'💪',name:'Post-Workout',cal:340,prot:42,desc:'Whey Isolate 1 scoop + 3 Egg Whites + Oats 25g + Flaxseeds 1 tbsp'},
+  {id:3,time:'01:00',icon:'🍎',name:'Night Snack',cal:110,prot:10,desc:'Greek Yogurt 100g (plain) + Green Tea (no sugar)'},
+  {id:4,time:'03:00',icon:'🍗',name:'Main Meal',cal:370,prot:40,desc:'Chicken/Salmon 160g + Brown Rice 40g + Dal + Broccoli/Veg | 💊 Omega-3'},
+  {id:5,time:'05:30',icon:'🥜',name:'Light Snack',cal:80,prot:4,desc:'Roasted Chana 15g + Walnuts 2 halves + Green Tea'},
+  {id:6,time:'07:30',icon:'🐟',name:'Last Meal ZERO CARBS',cal:250,prot:30,desc:'Fish/Chicken 140g + Spinach + Mushrooms + Curd 80g — NO rice/carbs!'},
+  {id:7,time:'09:30',icon:'🌙',name:'Before Sleep',cal:130,prot:15,desc:'Turmeric Milk 100ml + Casein 0.5 scoop (gym days) | 💊 Mag 400mg'},
 ];
 
 const SUPPS = [
   {id:'vitd',name:'Vitamin D3 + K2',dose:'60,000 IU',timing:'Weekly with fatty meal'},
-  {id:'omega',name:'Omega-3 Fish Oil (2 caps)',dose:'2,000mg',timing:'With Lunch'},
-  {id:'whey',name:'Fuel One Whey Isolate',dose:'1–1.5 scoops',timing:'Post-gym immediately'},
-  {id:'b12',name:'Vitamin B12',dose:'500–1000 mcg',timing:'Morning with meal'},
-  {id:'mag',name:'Magnesium Glycinate',dose:'400mg',timing:'Before bed 9:30 PM'},
-  {id:'multi',name:'Multivitamin',dose:'1 tablet',timing:'Morning with meal'},
-  {id:'lcar',name:'MB L-Carnitine PRO',dose:'15ml (3,300mg)',timing:'8:00 AM (30 min pre-gym)'},
-  {id:'casein',name:'Casein Protein',dose:'1 scoop',timing:'9:30 PM gym days only'},
+  {id:'omega',name:'Omega-3 Fish Oil (2 caps)',dose:'2,000mg',timing:'With Main Meal (3 AM)'},
+  {id:'whey',name:'Fuel One Whey Isolate',dose:'1 scoop',timing:'Post-gym (10:45 PM)'},
+  {id:'b12',name:'Vitamin B12',dose:'500–1000 mcg',timing:'Wake up meal (8 PM)'},
+  {id:'mag',name:'Magnesium Glycinate',dose:'400mg',timing:'Before sleep (9:30 AM)'},
+  {id:'multi',name:'Multivitamin',dose:'1 tablet',timing:'Wake up meal (8 PM)'},
+  {id:'lcar',name:'MB L-Carnitine PRO',dose:'15ml (3,300mg)',timing:'8:20 PM (40 min pre-gym)'},
+  {id:'casein',name:'Casein Protein',dose:'0.5 scoop',timing:'Before sleep gym days (9:30 AM)'},
 ];
 
 const GYM_SPLIT = {
@@ -575,15 +581,15 @@ const GYM_SPLIT = {
 };
 
 const WATER_SCHEDULE = [
-  {time:'05:00',amount:'500ml',reason:'🏃 Pre-gym hydration — first thing on waking'},
-  {time:'06:30',amount:'250ml',reason:'🏋️ During gym — sip between sets'},
-  {time:'08:00',amount:'500ml',reason:'💪 Post-gym — replaces sweat loss'},
-  {time:'10:00',amount:'500ml',reason:'🍎 Before mid-morning snack'},
-  {time:'13:00',amount:'500ml',reason:'🍗 With lunch — flushes Uric Acid'},
-  {time:'15:00',amount:'500ml',reason:'☀️ Afternoon — keeps metabolism active'},
-  {time:'17:00',amount:'500ml',reason:'🥜 Before snack — prevents overeating'},
-  {time:'19:00',amount:'500ml',reason:'🐟 Before dinner — reduces portion size'},
-  {time:'21:00',amount:'250ml',reason:'🌙 Before bed — flushes kidneys overnight'},
+  {time:'20:00',amount:'500ml',reason:'🏃 Wake up hydration — first thing'},
+  {time:'21:00',amount:'250ml',reason:'🏋️ During gym — sip between sets'},
+  {time:'22:30',amount:'500ml',reason:'💪 Post-gym — replaces sweat loss'},
+  {time:'00:30',amount:'500ml',reason:'🍎 With night snack'},
+  {time:'03:00',amount:'500ml',reason:'🍗 With main meal — flushes Uric Acid'},
+  {time:'05:00',amount:'500ml',reason:'☀️ Early morning — keeps metabolism active'},
+  {time:'06:30',amount:'500ml',reason:'🥜 Before last meals'},
+  {time:'07:30',amount:'500ml',reason:'🐟 Before last meal — reduces portion size'},
+  {time:'09:00',amount:'250ml',reason:'🌙 Before sleep — flushes kidneys'},
 ];
 
 // ═══════════════════════════════════════════════════════
@@ -643,7 +649,7 @@ function renderHome(){
   document.getElementById('sWater').textContent=wLit();
   document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short'});
   document.getElementById('todayGymTag').innerHTML=`<span class="tag ${isGym()?'tg':'tr'}">${isGym()?'🏋️ GYM DAY':'😴 REST DAY'}</span>${isGym()?`<span class="tag tb" style="margin-left:6px">${GYM_SPLIT[DOW].name}</span>`:''}`;
-  document.getElementById('todayProgs').innerHTML=PB('Meals',mDone(),7,'var(--g)')+PB('Supps',sDone(),SUPPS.length,'var(--p)')+PB('Calories (1,600)',Math.min(tCal(),1600),1600,'var(--o)')+PB('Protein (135g)',Math.min(tProt(),135),135,'var(--b)')+PB('Water (4.5L)',tw(),9,'var(--w)');
+  document.getElementById('todayProgs').innerHTML=PB('Meals',mDone(),7,'var(--g)')+PB('Supps',sDone(),SUPPS.length,'var(--p)')+PB('Calories (1,400)',Math.min(tCal(),1400),1400,'var(--o)')+PB('Protein (140g)',Math.min(tProt(),140),140,'var(--b)')+PB('Water (4.5L)',tw(),9,'var(--w)');
   renderWaterCups('wCupsHome','wTotalHome','wBarHome',null);
   document.getElementById('dayNote').value=notes[TODAY]?.note||'';
   document.getElementById('moodSel').value=notes[TODAY]?.mood||'';
@@ -727,6 +733,15 @@ function renderMeals(){
       ${d[m.id]?'<span class="tag tg">✓</span>':''}
     </div>`).join('');
   renderFoodLog();
+  const sd=ts();
+  const msc=document.getElementById('mealSuppCount');
+  const msl=document.getElementById('mealSuppList');
+  if(msc)msc.textContent=sDone()+'/8';
+  if(msl)msl.innerHTML=SUPPS.map(s=>`<div class="row ${sd[s.id]?'faded':''}" onclick="toggleSupp('${s.id}')">
+    <div class="cb ${sd[s.id]?'done':''}">${sd[s.id]?'✓':''}</div>
+    <div class="f1"><div class="rt">💊 ${s.name}</div><div class="rs">${s.dose} — ${s.timing}</div></div>
+    ${sd[s.id]?'<span class="tag tp">✓</span>':''}
+  </div>`).join('');
 }
 
 async function toggleMeal(id){
@@ -744,6 +759,34 @@ async function addFood(){
   renderFoodLog();renderHome();
 }
 
+async function estimateMacros(){
+  const name=document.getElementById('fName').value.trim();
+  if(!name){toast('Enter a food name first!');return;}
+  if(!apiKey){toast('Add Claude API key in Settings first!');return;}
+  const btn=document.getElementById('estBtn');
+  btn.disabled=true;btn.innerHTML='<span class="sp"></span> Estimating...';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:150,system:'You are a nutrition database. Given a food item with quantity, estimate calories, protein(g), carbs(g), fat(g). Return ONLY a JSON object: {"cal":250,"prot":30,"carb":10,"fat":8}. Use Indian food database when applicable. No other text.',messages:[{role:'user',content:`Estimate nutrition for: ${name}`}]})
+    });
+    if(!res.ok)throw new Error('API error '+res.status);
+    const data=await res.json();
+    const text=data.content[0]?.text||'';
+    const match=text.match(/\{[^}]+\}/);
+    if(match){
+      const m=JSON.parse(match[0]);
+      document.getElementById('fCal').value=m.cal||0;
+      document.getElementById('fProt').value=m.prot||0;
+      document.getElementById('fCarb').value=m.carb||0;
+      document.getElementById('fFat').value=m.fat||0;
+      toast('✅ Macros estimated by AI!');
+    }else{toast('Could not parse — enter manually');}
+  }catch(e){toast('❌ '+e.message);}
+  btn.disabled=false;btn.innerHTML='🤖 Auto-Estimate Macros with AI';
+}
+
 async function removeFood(id){
   foodLog[TODAY]=(foodLog[TODAY]||[]).filter(f=>f.id!==id);
   await persist('foodLog');renderFoodLog();renderHome();
@@ -759,7 +802,7 @@ function renderFoodLog(){
   document.getElementById('foodTot').innerHTML=`<div style="margin-top:8px;padding:10px;background:#0a0a15;border-radius:11px">
     <div style="font-weight:700;color:var(--g);font-size:13px">Daily Total</div>
     <div style="font-size:12px;color:#aaa;margin-top:4px">🔥 ${tc} kcal &nbsp; 💪 ${tp}g protein</div>
-    <div style="font-size:11px;color:${tc>1700?'var(--r)':'var(--g)'};margin-top:3px">${tc>1700?'⚠️ Over target!':'✅ On track'} | Target: 1,600kcal/135g</div>
+    <div style="font-size:11px;color:${tc>1500?'var(--r)':'var(--g)'};margin-top:3px">${tc>1500?'⚠️ Over target!':'✅ On track'} | Target: 1,400kcal/140g</div>
   </div>`;
 }
 
@@ -770,7 +813,7 @@ function renderGym(){
   const g=isGym(),split=GYM_SPLIT[DOW];
   document.getElementById('gDay').textContent=(g?'🏋️ ':'😴 ')+split.name;
   document.getElementById('gDay').style.color=g?'var(--g)':'var(--r)';
-  document.getElementById('gInfo').innerHTML=g?`⏰ 8:30 AM &nbsp;📍 Gym<br>💊 L-Carnitine PRO 15ml — 30 min before<br>🥛 Whey Isolate immediately after<br>💧 Carry 1.5L water bottle`:'Active recovery — light walk 8,000+ steps + stretching.';
+  document.getElementById('gInfo').innerHTML=g?`⏰ 9:00 PM &nbsp;📍 Gym<br>💊 L-Carnitine PRO 15ml at 8:20 PM (40 min before)<br>🥛 Whey Isolate immediately after<br>💧 Carry 1.5L water bottle<br>🔥 AGGRESSIVE: Extra 10min HIIT finisher every session`:'Active recovery — 20min walk + stretching + foam rolling.';
   if(g&&split.exercises.length){
     document.getElementById('gExercises').innerHTML=split.exercises.map(e=>`
       <div style="padding:8px 0;border-bottom:1px solid #1a1a28">
@@ -871,6 +914,7 @@ async function toggleSupp(id){
   if(!suppLog[TODAY])suppLog[TODAY]={};
   suppLog[TODAY][id]=!suppLog[TODAY][id];
   await persist('suppLog');renderSupps();renderHome();
+  if(document.getElementById('page-meals').classList.contains('active'))renderMeals();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -990,34 +1034,51 @@ function updateApiUI(){
 let chatHistory=[];
 
 function buildSystem(){
-  return `You are Coach Rex — Asrid's dedicated, strict, motivating AI personal trainer. Speak like a real gym trainer: direct, energetic, science-backed, tough-love when needed, genuinely celebratory when he performs well.
+  const allFood=Object.entries(foodLog).slice(-7).map(([d,foods])=>`${d}: ${(foods||[]).map(f=>`${f.name}(${f.cal}kcal/${f.prot}gP)`).join(', ')||'nothing'}`).join(' | ');
+  const allWater=Object.entries(waterLog).slice(-7).map(([d,c])=>`${d}:${(c*0.5).toFixed(1)}L`).join(', ');
+  const allGym=Object.entries(gymLog).slice(-7).map(([d,l])=>`${d}:${l.workout||''} ${l.rating||''} ${l.energy||''}`).join(' | ');
+  return `You are Coach Rex — Asrid's dedicated, STRICT, aggressive AI personal trainer. Direct, energetic, science-backed, tough-love when needed.
 
-ATHLETE: Asrid Cheerngodan | 25M | 171cm | Bengaluru
+ATHLETE: Asrid Cheerngodan | 25M | 171cm | Bengaluru | NIGHT SHIFT (wakes 8 PM, gym 9 PM, sleeps ~10 AM)
+
+⚠️ AGGRESSIVE FAT LOSS MODE — No progress Week 1. Plan is now INTENSE:
+- Calories: 1,400 kcal/day (cut from 1,600)
+- Protein: 140g MAX (blood markers limit)
+- ZERO carbs at last meal
+- Extra HIIT every gym session
+- 20min walk on rest days
+
 WEIGHT: Start 75kg → Current ${latW()}kg → Target 66kg | Lost: ${lost()}kg | Progress: ${pct()}%
+${weights.length>1?'TREND: '+(latW()<weights[weights.length-2]?.weight?'↓ LOSING':'⚠️ STALLED/GAINING'):''}
 
-BLOOD FLAGS (CRITICAL — always factor in):
-🔴 Vit D: 12.4 ng/mL DEFICIENT → D3+K2 60,000 IU weekly
-🔴 HDL: 36 mg/dL LOW → salmon, mackerel, walnuts, flaxseeds, Omega-3 2g/day
-🟡 Uric Acid: 7.5 BORDERLINE → NO creatine, NO BCAAs, NO red meat, 4.5L water
-🟡 BUN/Creatinine: 22.8 ELEVATED → max protein 140g/day, 4.5L water
-🟡 B12: 329 LOW-NORMAL → supplement daily
+BLOOD FLAGS (CRITICAL):
+🔴 Vit D: 12.4 DEFICIENT → D3+K2 60,000 IU weekly
+🔴 HDL: 36 LOW → salmon, walnuts, Omega-3 2g/day
+🟡 Uric Acid: 7.5 → NO creatine, NO BCAAs, NO red meat, 4.5L water
+🟡 BUN/Creatinine: 22.8 → cap protein 140g, 4.5L water
+🟡 B12: 329 → supplement daily
 
-TARGETS: 1,550–1,650 kcal | Protein 135–145g MAX 140g | ZERO carbs dinner | 4.5L water
+TARGETS: 1,350–1,400 kcal | Protein 135–140g MAX | ZERO carbs last meal | 4.5L water
 
 TODAY (${TODAY} — ${DAYSF[DOW]}):
-Gym: ${isGym()?'YES — '+GYM_SPLIT[DOW].name:'REST DAY'}
+Gym: ${isGym()?'YES — '+GYM_SPLIT[DOW].name+' at 9 PM':'REST DAY'}
 Meals: ${mDone()}/7 | Calories: ${tCal()}kcal | Protein: ${tProt()}g
 Water: ${wLit()}L / 4.5L | Supps: ${sDone()}/${SUPPS.length}
-Foods: ${tf().length?tf().map(f=>`${f.name}(${f.cal}kcal,${f.prot}g)`).join(', '):'Nothing logged'}
+Foods today: ${tf().length?tf().map(f=>`${f.name}(${f.cal}kcal,${f.prot}g)`).join(', '):'Nothing logged'}
 Gym log: ${gymLog[TODAY]?`${gymLog[TODAY].rating||''} ${gymLog[TODAY].energy||''} — ${gymLog[TODAY].note||''}`:'Not logged'}
-Mood: ${notes[TODAY]?.mood||'Not logged'}
+Mood: ${notes[TODAY]?.mood||'Not logged'} | Note: ${notes[TODAY]?.note||'None'}
 
-WEIGHT HISTORY (last 7): ${weights.slice(-7).map(w=>`${w.date}:${w.weight}kg`).join(', ')}
+FULL HISTORY (last 7 days):
+Weight: ${weights.slice(-7).map(w=>`${w.date}:${w.weight}kg`).join(', ')}
+Food: ${allFood}
+Water: ${allWater}
+Gym: ${allGym}
+Photos: ${photos.length} progress photos uploaded
 
-SUPPLEMENTS: Fuel One Whey Isolate, MB L-Carnitine PRO 3300mg, Omega-3 2000mg, D3+K2, B12, Mag 400mg, Multi, Casein
-NEVER recommend: Creatine, BCAAs supplements, high-stimulant pre-workouts, red meat, prawns
+SUPPLEMENTS: Whey Isolate, L-Carnitine PRO 3300mg, Omega-3 2000mg, D3+K2, B12, Mag 400mg, Multi, Casein
+NEVER recommend: Creatine, BCAAs, high-stim pre-workouts, red meat, prawns
 
-STYLE: Real trainer tone. Call him BRO/CHAMP/ASRID. Reference actual data. Be tough when he slacks, hype when he wins. Max 250 words. End with ONE immediate action.`;
+STYLE: Real trainer tough-love. Call him BRO/CHAMP/ASRID. Reference ACTUAL data. Be AGGRESSIVE when he slacks. Celebrate wins. End with ONE immediate action. Max 300 words.`;
 }
 
 async function callClaude(msg){
@@ -1026,7 +1087,7 @@ async function callClaude(msg){
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:700,system:buildSystem(),messages:chatHistory})
     });
     if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'API Error');}
@@ -1128,7 +1189,7 @@ function setupNotifs(){
   else if(Notification.permission==='granted')scheduleNotifs();
 }
 function scheduleNotifs(){
-  [[5,0,'🏃 MEAL 1: Lemon water+Coffee+Banana+Almonds | Take L-Carnitine PRO+B12+Multi | GYM 8:30!'],[7,55,'💊 Take L-Carnitine PRO 15ml NOW! Gym in 35 min!'],[10,15,'💪 MEAL 2: Whey shake immediately! Then Eggs+Oats+Flaxseeds'],[12,30,'🍎 MEAL 3: Greek yogurt+Apple+Green tea'],[13,50,'🍗 LUNCH in 10 min: Chicken/Fish+Rice+Dal | Omega-3 2 caps!'],[17,0,'🥜 MEAL 5: Chana+Walnuts+Green tea'],[19,20,'🐟 DINNER ZERO CARBS in 10 min: Fish/Chicken+Veggies+Curd ONLY!'],[21,30,'🌙 MEAL 7: Turmeric milk+Casein+Magnesium | Sleep 10:30!']].forEach(([h,m,msg])=>{
+  [[20,0,'🏃 WAKE UP! MEAL 1: Coffee+Banana+Almonds | L-Carnitine+B12+Multi | GYM 9PM!'],[20,20,'💊 Take L-Carnitine PRO 15ml NOW! Gym in 40 min!'],[22,45,'💪 MEAL 2: Whey shake NOW! Then Egg Whites+Oats+Flaxseeds'],[1,0,'🍎 MEAL 3: Greek yogurt + Green tea'],[2,50,'🍗 MAIN MEAL in 10 min: Chicken/Fish+Rice+Dal | Omega-3 2 caps!'],[5,30,'🥜 MEAL 5: Chana+Walnuts+Green tea'],[7,20,'🐟 LAST MEAL ZERO CARBS: Fish/Chicken+Veggies+Curd ONLY!'],[9,30,'🌙 MEAL 7: Turmeric milk+Casein+Mag | Sleep by 10:30!']].forEach(([h,m,msg])=>{
     const now=new Date(),t=new Date();t.setHours(h,m,0,0);let delay=t-now;if(delay<0)delay+=86400000;
     setTimeout(()=>{if(Notification.permission==='granted')new Notification('💪 FitTracker — Coach Rex',{body:msg});},delay);
   });

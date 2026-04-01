@@ -98,7 +98,7 @@
       <label class="label">Password</label>
       <div class="inp-icon" style="position:relative">
         <span class="icon">🔒</span>
-        <input class="inp" type="password" id="password" placeholder="Enter your password" autocomplete="current-password" id="pw">
+        <input class="inp" type="password" id="password" placeholder="Enter your password" autocomplete="current-password">
         <button class="show-pw" onclick="togglePw()" id="eyeBtn">👁️</button>
       </div>
     </div>
@@ -112,6 +112,8 @@
   </div>
 
   <div class="footer">
+    🔒 Your data is <span>private & encrypted</span><br>
+    Powered by Supabase Auth + Claude AI
   </div>
 
 </div>
@@ -128,6 +130,7 @@ async function checkSession() {
     window.location.href = 'app.html';
   }
 }
+checkSession();
 
 function togglePw() {
   const pw = document.getElementById('password');

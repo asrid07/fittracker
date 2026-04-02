@@ -380,6 +380,50 @@ textarea.inp{resize:none;min-height:80px}
   <div class="card card-hero"><div class="ct">This Week</div><div class="sg3" id="weekStats" style="margin-bottom:0"></div></div>
   <div class="card"><div class="ct">Weight Trend</div><svg class="chart-svg" id="progChart" style="height:120px"></svg></div>
   <div class="card"><div class="ct">🔥 Streaks & Consistency</div><div id="streaks"></div></div>
+
+  <!-- BLOOD / BMI REPORTS -->
+  <div class="card" style="border-color:#ff446630">
+    <div class="ct" style="color:var(--r)">🩸 Upload Blood / BMI Report</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Upload your blood test / health report images. Claude AI will read & compare old vs new.</div>
+    <div class="ig2">
+      <button class="btn btn-r" onclick="document.getElementById('reportCapture').click()" style="font-size:12px">📷 Take Photo</button>
+      <button class="btn btn-b" onclick="document.getElementById('reportPick').click()" style="font-size:12px">🖼️ From Gallery</button>
+    </div>
+    <input type="file" id="reportCapture" accept="image/*" capture="environment" style="display:none" onchange="addReport(event)">
+    <input type="file" id="reportPick" accept="image/*" style="display:none" onchange="addReport(event)">
+    <div class="ig2" style="margin-top:7px">
+      <select class="inp" id="reportType">
+        <option>Full Blood Panel</option>
+        <option>BMI / Body Composition</option>
+        <option>Lipid Profile</option>
+        <option>Kidney Function</option>
+        <option>Liver Function</option>
+        <option>Vitamin Panel</option>
+        <option>Uric Acid</option>
+        <option>Thyroid</option>
+        <option>General Checkup</option>
+      </select>
+      <input class="inp" id="reportNote" placeholder="Lab name / notes">
+    </div>
+  </div>
+
+  <div class="card" id="reportCompareCard" style="border-color:#b06cff30;display:none">
+    <div class="ct" style="color:var(--p)">🤖 AI Report Comparison</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Select two reports to compare with Claude AI</div>
+    <div class="ig2">
+      <select class="inp" id="reportOld"><option value="">Select OLD report...</option></select>
+      <select class="inp" id="reportNew"><option value="">Select NEW report...</option></select>
+    </div>
+    <button class="btn btn-p mt8" onclick="compareReports()" id="compareBtn" style="font-size:12px">🤖 Compare with Claude AI</button>
+    <div id="compareResult" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card" id="reportListCard">
+    <div class="ct">📋 Saved Reports — <span id="reportCount">0</span></div>
+    <div id="reportList"></div>
+    <div id="reportEmpty" class="empty">No reports uploaded yet. Upload your blood test images above!</div>
+  </div>
+
   <div class="card"><div class="ct">🩸 Blood Report Action Plan</div><div id="bloodPlan"></div></div>
   <div class="card"><div class="ct">📦 Supplement Stack Review</div><div id="suppReview"></div></div>
 </div>
@@ -402,6 +446,7 @@ textarea.inp{resize:none;min-height:80px}
     <button class="exp-btn" onclick="exportCSV('gym')"><span class="exp-icon">🏋️</span><div><div class="exp-title">Gym Log (CSV)</div><div class="exp-sub">All sessions + ratings</div></div></button>
     <button class="exp-btn" onclick="exportCSV('water')"><span class="exp-icon">💧</span><div><div class="exp-title">Water Log (CSV)</div><div class="exp-sub">Daily hydration</div></div></button>
     <button class="exp-btn" onclick="exportPhotos()"><span class="exp-icon">📸</span><div><div class="exp-title">Progress Photos</div><div class="exp-sub">Downloads each photo</div></div></button>
+    <button class="exp-btn" onclick="exportReports()"><span class="exp-icon">🩸</span><div><div class="exp-title">Blood / BMI Reports</div><div class="exp-sub">Downloads all report images</div></div></button>
   </div>
 
   <div class="card">
@@ -518,6 +563,7 @@ async function loadAllData() {
         case 'waterLog': waterLog = row.data_value || {}; break;
         case 'notes': notes = row.data_value || {}; break;
         case 'photos': photos = row.data_value || []; break;
+        case 'reports': reports = row.data_value || []; break;
         case 'apiKey': apiKey = row.data_value || ''; break;
       }
     });
@@ -531,7 +577,7 @@ async function loadAllData() {
 }
 
 async function persist(key) {
-  const map = { weights, mealLog, suppLog, gymLog, foodLog, waterLog, notes, photos };
+  const map = { weights, mealLog, suppLog, gymLog, foodLog, waterLog, notes, photos, reports };
   if (key) {
     await syncToCloud(key, map[key]);
   } else {
@@ -599,7 +645,7 @@ const WATER_SCHEDULE = [
 // ═══════════════════════════════════════════════════════
 // STATE (loaded from Supabase)
 // ═══════════════════════════════════════════════════════
-let mealLog={}, weights=[], suppLog={}, gymLog={}, foodLog={}, waterLog={}, notes={}, photos=[];
+let mealLog={}, weights=[], suppLog={}, gymLog={}, foodLog={}, waterLog={}, notes={}, photos=[], reports=[];
 
 // ═══════════════════════════════════════════════════════
 // COMPUTED
@@ -612,8 +658,16 @@ const latW=()=>weights.length?weights[weights.length-1].weight:75;
 const lost=()=>+(75-latW()).toFixed(1);
 const toGo=()=>+(latW()-66).toFixed(1);
 const pct=()=>Math.min(100,Math.round((lost()/9)*100));
-const tCal=()=>tf().reduce((a,f)=>a+(+f.cal||0),0);
-const tProt=()=>tf().reduce((a,f)=>a+(+f.prot||0),0);
+const tCal=()=>{
+  const foodCal=tf().reduce((a,f)=>a+(+f.cal||0),0);
+  const mealCal=MEALS.filter(m=>tm()[m.id]).reduce((a,m)=>a+m.cal,0);
+  return foodCal+mealCal;
+};
+const tProt=()=>{
+  const foodProt=tf().reduce((a,f)=>a+(+f.prot||0),0);
+  const mealProt=MEALS.filter(m=>tm()[m.id]).reduce((a,m)=>a+m.prot,0);
+  return foodProt+mealProt;
+};
 const mDone=()=>MEALS.filter(m=>tm()[m.id]).length;
 const sDone=()=>SUPPS.filter(s=>ts()[s.id]).length;
 const isGym=()=>DOW!==0;
@@ -800,14 +854,28 @@ async function removeFood(id){
 
 function renderFoodLog(){
   const foods=tf();
-  if(!foods.length){document.getElementById('foodLog').innerHTML='';document.getElementById('foodTot').innerHTML='';return;}
-  document.getElementById('foodLog').innerHTML='<div class="sep"></div>'+foods.map(f=>`
-    <div class="row"><div class="f1"><div class="rt">${f.name}</div><div class="rs">🔥${f.cal}kcal  💪${f.prot}g  🌾${f.carb}g  🧈${f.fat}g</div></div>
-    <button onclick="removeFood(${f.id})" style="background:#ff446615;border:none;color:var(--r);border-radius:7px;padding:4px 9px;cursor:pointer;font-size:11px">✕</button></div>`).join('');
   const tc=tCal(),tp=tProt();
+  const mealPlanCal=MEALS.filter(m=>tm()[m.id]).reduce((a,m)=>a+m.cal,0);
+  const mealPlanProt=MEALS.filter(m=>tm()[m.id]).reduce((a,m)=>a+m.prot,0);
+  const foodOnlyCal=foods.reduce((a,f)=>a+(+f.cal||0),0);
+  const foodOnlyProt=foods.reduce((a,f)=>a+(+f.prot||0),0);
+
+  if(!foods.length){document.getElementById('foodLog').innerHTML='';}
+  else{document.getElementById('foodLog').innerHTML='<div class="sep"></div>'+foods.map(f=>`
+    <div class="row"><div class="f1"><div class="rt">${f.name}</div><div class="rs">🔥${f.cal}kcal  💪${f.prot}g  🌾${f.carb}g  🧈${f.fat}g</div></div>
+    <button onclick="removeFood(${f.id})" style="background:#ff446615;border:none;color:var(--r);border-radius:7px;padding:4px 9px;cursor:pointer;font-size:11px">✕</button></div>`).join('');}
+
+  if(tc===0&&tp===0){document.getElementById('foodTot').innerHTML='';return;}
   const calPct=Math.min(100,Math.round(tc/1400*100)),protPct=Math.min(100,Math.round(tp/140*100));
+  let breakdownHtml='';
+  if(mealPlanCal>0&&foodOnlyCal>0){
+    breakdownHtml=`<div style="font-size:10px;color:var(--muted);margin-bottom:6px">📋 Meal plan: ${mealPlanCal}kcal / ${mealPlanProt}g prot &nbsp;|&nbsp; 🍽️ Extra food: ${foodOnlyCal}kcal / ${foodOnlyProt}g prot</div>`;
+  }else if(mealPlanCal>0){
+    breakdownHtml=`<div style="font-size:10px;color:var(--muted);margin-bottom:6px">📋 From checked meal plan items</div>`;
+  }
   document.getElementById('foodTot').innerHTML=`<div style="margin-top:8px;padding:12px;background:#0a0a15;border-radius:11px">
     <div style="font-weight:700;color:var(--g);font-size:13px;margin-bottom:8px">📊 Daily Total</div>
+    ${breakdownHtml}
     <div style="margin-bottom:6px">
       <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:#ccc">🔥 Calories</span><span style="color:${tc>1400?'var(--r)':'var(--o)'};font-weight:700">${tc} / 1,400 kcal — ${calPct}%</span></div>
       <div class="pb"><div class="pf" style="width:${calPct}%;background:${tc>1400?'var(--r)':'var(--o)'}"></div></div>
@@ -1019,11 +1087,181 @@ function renderProgress(){
     {name:'Magnesium Glycinate',r:'⭐⭐⭐⭐⭐',note:'Sleep, recovery, reduces cortisol'},
     {name:'Vitamin D3+K2',r:'⭐⭐⭐⭐⭐',note:'Urgent — your level is severely deficient (12.4)'},
   ].map(s=>`<div style="padding:7px 0;border-bottom:1px solid #1a1a28"><div style="font-weight:600;font-size:12px">${s.name} ${s.r}</div><div style="font-size:10px;color:var(--muted);margin-top:1px">✅ ${s.note}</div></div>`).join('');
+
+  // Render reports section
+  renderReports();
 }
 
 // ═══════════════════════════════════════════════════════
-// API KEY (synced via Supabase)
+// BLOOD / BMI REPORTS
 // ═══════════════════════════════════════════════════════
+async function addReport(e){
+  const file=e.target.files[0];if(!file)return;
+  const type=document.getElementById('reportType').value;
+  const note=document.getElementById('reportNote').value;
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    reports.push({id:Date.now(),date:TODAY,src:ev.target.result,type,note,weight:latW()});
+    reports.sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+    await persist('reports');
+    document.getElementById('reportNote').value='';
+    renderReports();
+    toast('📋 Report uploaded & synced ✓');
+  };
+  reader.readAsDataURL(file);e.target.value='';
+}
+
+async function deleteReport(id){
+  if(!confirm('Delete this report?'))return;
+  reports=reports.filter(r=>r.id!==id);
+  await persist('reports');renderReports();
+  toast('Report deleted');
+}
+
+function dlReport(id){
+  const r=reports.find(x=>x.id===id);if(!r)return;
+  const a=document.createElement('a');a.href=r.src;a.download=`report_${r.type.replace(/\s+/g,'_')}_${r.date}.jpg`;a.click();
+}
+
+function renderReports(){
+  const count=reports.length;
+  document.getElementById('reportCount').textContent=count;
+  document.getElementById('reportEmpty').style.display=count?'none':'block';
+
+  // Populate compare dropdowns
+  const oldSel=document.getElementById('reportOld');
+  const newSel=document.getElementById('reportNew');
+  const compCard=document.getElementById('reportCompareCard');
+  if(count>=2){
+    compCard.style.display='block';
+    const opts=reports.map(r=>`<option value="${r.id}">${r.type} — ${new Date(r.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}${r.note?' ('+r.note+')':''}</option>`).join('');
+    oldSel.innerHTML='<option value="">Select OLD report...</option>'+opts;
+    newSel.innerHTML='<option value="">Select NEW report...</option>'+opts;
+    // Auto-select oldest and newest
+    if(reports.length>=2){
+      oldSel.value=reports[reports.length-1].id;
+      newSel.value=reports[0].id;
+    }
+  }else{
+    compCard.style.display='none';
+  }
+
+  // Render report list grouped by type
+  const types=[...new Set(reports.map(r=>r.type))];
+  let html='';
+  types.forEach(type=>{
+    const tr=reports.filter(r=>r.type===type);
+    html+=`<div style="margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px">🩸 ${type} (${tr.length})</div>
+      ${tr.map(r=>`<div class="row" style="cursor:default">
+        <div style="width:50px;height:50px;border-radius:10px;overflow:hidden;flex-shrink:0;border:1px solid #2a2a3e">
+          <img src="${r.src}" style="width:100%;height:100%;object-fit:cover" loading="lazy">
+        </div>
+        <div class="f1">
+          <div class="rt">${r.type}</div>
+          <div class="rs">${new Date(r.date).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'})} • ${r.weight}kg${r.note?' • '+r.note:''}</div>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button onclick="viewReport(${r.id})" style="background:#00c8ff15;border:none;color:var(--b);border-radius:7px;padding:4px 8px;cursor:pointer;font-size:11px">👁</button>
+          <button onclick="dlReport(${r.id})" style="background:#00ff8815;border:none;color:var(--g);border-radius:7px;padding:4px 8px;cursor:pointer;font-size:11px">⬇</button>
+          <button onclick="deleteReport(${r.id})" style="background:#ff446615;border:none;color:var(--r);border-radius:7px;padding:4px 8px;cursor:pointer;font-size:11px">✕</button>
+        </div>
+      </div>`).join('')}
+    </div>`;
+  });
+  document.getElementById('reportList').innerHTML=html;
+}
+
+function viewReport(id){
+  const r=reports.find(x=>x.id===id);if(!r)return;
+  document.getElementById('modalTitle').textContent='🩸 '+r.type;
+  document.getElementById('modalSub').textContent=new Date(r.date).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' • Weight: '+r.weight+'kg'+(r.note?' • '+r.note:'');
+  document.getElementById('modalBody').innerHTML=`<img src="${r.src}" style="width:100%;border-radius:12px;margin-bottom:10px">
+    <button class="btn btn-p" onclick="analyzeReport(${r.id})" style="font-size:12px">🤖 Analyze with Claude AI</button>
+    <div id="singleAnalysis" style="margin-top:10px"></div>`;
+  document.getElementById('modal').style.display='flex';
+}
+
+async function analyzeReport(id){
+  const r=reports.find(x=>x.id===id);if(!r)return;
+  if(!apiKey){toast('Add Claude API key in Settings first!');return;}
+  const el=document.getElementById('singleAnalysis');
+  el.innerHTML='<div style="text-align:center;padding:12px"><span class="sp"></span> <span class="pulsing" style="color:var(--muted)">Analyzing report...</span></div>';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,
+        system:'You are a health report analyst for a 25M fitness enthusiast (171cm, current weight '+latW()+'kg, target 66kg). Known issues: Vitamin D 12.4 (deficient), HDL 36 (low), Uric Acid 7.5 (borderline high), BUN/Creatinine 22.8 (elevated), B12 329 (low). He takes: Whey Isolate, L-Carnitine, Omega-3, D3+K2, B12, Magnesium, Multivitamin. On 1400 kcal/day, 140g protein max. Analyze the blood/BMI report image thoroughly. List every value you can read, flag anything abnormal, and give specific actionable advice. Use emojis and be clear.',
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:r.src.match(/data:(.*?);/)?.[1]||'image/jpeg',data:r.src.replace(/^data:.*?;base64,/,'')}},
+          {type:'text',text:'Analyze this '+r.type+' report in detail. Read every value, flag abnormal ones, compare to my known health issues, and suggest specific actions for my diet/supplement plan.'}
+        ]}]
+      })
+    });
+    if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'API Error '+res.status);}
+    const data=await res.json();
+    const reply=data.content[0]?.text||'No response';
+    el.innerHTML=`<div style="background:#0a0a15;border-radius:11px;padding:12px;font-size:12px;line-height:1.8;color:#ddd">${reply.replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--g)">$1</strong>').replace(/\n/g,'<br>')}</div>`;
+  }catch(e){
+    el.innerHTML=`<div style="color:var(--r);font-size:12px">❌ ${e.message}</div>`;
+  }
+}
+
+async function compareReports(){
+  const oldId=+document.getElementById('reportOld').value;
+  const newId=+document.getElementById('reportNew').value;
+  if(!oldId||!newId){toast('Select both OLD and NEW reports!');return;}
+  if(oldId===newId){toast('Select two different reports!');return;}
+  if(!apiKey){toast('Add Claude API key in Settings first!');return;}
+
+  const oldR=reports.find(r=>r.id===oldId);
+  const newR=reports.find(r=>r.id===newId);
+  if(!oldR||!newR){toast('Report not found!');return;}
+
+  const btn=document.getElementById('compareBtn');
+  const result=document.getElementById('compareResult');
+  btn.disabled=true;btn.innerHTML='<span class="sp"></span> Comparing...';
+  result.innerHTML='<div style="text-align:center;padding:15px"><span class="sp"></span> <span class="pulsing" style="color:var(--muted)">Claude AI is reading both reports and comparing...</span></div>';
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,
+        system:`You are a health report comparison analyst for Asrid — 25M, 171cm, weight ${latW()}kg (target 66kg). Known blood flags: Vitamin D 12.4 (deficient), HDL 36 (low), Uric Acid 7.5 (borderline), BUN/Creatinine 22.8 (elevated), B12 329 (low). Current plan: 1400 kcal/day, 140g protein max, supplements: Whey Isolate, L-Carnitine 3300mg, Omega-3 2g, D3+K2 60k IU weekly, B12, Mag 400mg, Multivitamin. NO creatine/BCAAs/red meat.
+
+Compare the OLD report vs NEW report. For each parameter:
+1. Show the OLD value → NEW value with arrow
+2. Mark ✅ improved, ⚠️ same, or 🔴 worsened
+3. Explain what changed and WHY (diet? supplements? hydration?)
+4. Give specific action items to improve further
+
+End with an OVERALL VERDICT: Is his health improving? What to change in diet/supplements/training?
+Use emojis, be thorough, be a real health coach.`,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:oldR.src.match(/data:(.*?);/)?.[1]||'image/jpeg',data:oldR.src.replace(/^data:.*?;base64,/,'')}},
+          {type:'text',text:`This is the OLD report (${oldR.type}) from ${oldR.date}. Weight was ${oldR.weight}kg.`},
+          {type:'image',source:{type:'base64',media_type:newR.src.match(/data:(.*?);/)?.[1]||'image/jpeg',data:newR.src.replace(/^data:.*?;base64,/,'')}},
+          {type:'text',text:`This is the NEW report (${newR.type}) from ${newR.date}. Weight is ${newR.weight}kg. Compare both reports in detail — what improved, what worsened, what needs action.`}
+        ]}]
+      })
+    });
+    if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'API Error '+res.status);}
+    const data=await res.json();
+    const reply=data.content[0]?.text||'No response';
+    result.innerHTML=`<div style="background:#0a0a15;border:1px solid #1e1e2e;border-radius:14px;padding:14px;margin-top:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:10px;color:var(--muted)">📋 ${oldR.type} (${oldR.date}) → ${newR.type} (${newR.date})</div>
+        <div style="font-size:10px;color:var(--b)">⚖️ ${oldR.weight}kg → ${newR.weight}kg</div>
+      </div>
+      <div style="font-size:12px;line-height:1.8;color:#ddd">${reply.replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--g)">$1</strong>').replace(/\n/g,'<br>')}</div>
+    </div>`;
+  }catch(e){
+    result.innerHTML=`<div style="color:var(--r);font-size:12px;padding:10px">❌ ${e.message}</div>`;
+  }
+  btn.disabled=false;btn.innerHTML='🤖 Compare with Claude AI';
+}
 function renderAI(){updateMood();}
 
 async function saveApiKey(){
@@ -1164,7 +1402,7 @@ function dl(name,content,type='application/json'){
 }
 
 function exportAll(){
-  const data={exportDate:new Date().toISOString(),profile:{name:'Asrid',currentWeight:latW(),targetWeight:66,lostKg:lost()},weights,mealLog,suppLog,gymLog,foodLog,waterLog,notes,photoCount:photos.length};
+  const data={exportDate:new Date().toISOString(),profile:{name:'Asrid',currentWeight:latW(),targetWeight:66,lostKg:lost()},weights,mealLog,suppLog,gymLog,foodLog,waterLog,notes,photoCount:photos.length,reportCount:reports.length};
   dl(`fittracker_full_${TODAY}.json`,JSON.stringify(data,null,2));
   toast('Full export saved to Downloads ✓');
 }
@@ -1183,6 +1421,12 @@ function exportPhotos(){
   if(!photos.length){toast('No photos to export');return;}
   photos.forEach((p,i)=>setTimeout(()=>{const a=document.createElement('a');a.href=p.src;a.download=`progress_${p.type}_${p.date}_${i+1}.jpg`;a.click();},i*700));
   toast(`Downloading ${photos.length} photos...`);
+}
+
+function exportReports(){
+  if(!reports.length){toast('No reports to export');return;}
+  reports.forEach((r,i)=>setTimeout(()=>{const a=document.createElement('a');a.href=r.src;a.download=`report_${r.type.replace(/\s+/g,'_')}_${r.date}_${i+1}.jpg`;a.click();},i*700));
+  toast(`Downloading ${reports.length} reports...`);
 }
 
 // ═══════════════════════════════════════════════════════
